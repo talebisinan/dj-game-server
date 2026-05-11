@@ -8,7 +8,7 @@ from users.security import create_access_token
 
 from .auth import BearerAuth
 from .models import User
-from .schemas import LoginSchema, MessageSchema, RegisterSchema, TokenSchema, UserSchema
+from .schemas import LoginSchema, RegisterSchema, TokenSchema, UserSchema
 
 router = Router(tags=["users"])
 
@@ -38,12 +38,6 @@ def login(request, payload: LoginSchema):
     typed_user = cast(User, user)
     token = create_access_token(subject=typed_user.email)
     return {"access_token": token, "token_type": "bearer"}
-
-
-@router.post("/logout", response=MessageSchema, auth=BearerAuth())
-def logout(request):
-    # Token invalidation is handled client-side
-    return MessageSchema(message="Logged out successfully.")
 
 
 @router.get("/me", response=UserSchema, auth=BearerAuth())

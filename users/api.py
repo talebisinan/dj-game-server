@@ -1,4 +1,3 @@
-from tkinter import Message
 from typing import cast
 
 from django.contrib.auth import authenticate

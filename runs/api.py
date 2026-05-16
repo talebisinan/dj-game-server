@@ -1,3 +1,6 @@
+import json
+from pathlib import Path
+
 from ninja.errors import HttpError
 from ninja.router import Router
 
@@ -11,6 +14,13 @@ router = Router(tags=["runs"])
 @router.post("/", response=RunSchema, auth=BearerAuth())
 def create_run(request, payload: CreateRunSchema):
     return RunService().create(request.auth, payload.template_config)
+
+
+@router.get("/default-template", response=WorldConfigSchema)
+def get_default_template(request):
+    path = Path(__file__).parent / "default_template.json"
+    with open(path) as f:
+        return json.load(f)
 
 
 @router.get("/{invite_code}", response=RunSchema, auth=BearerAuth())

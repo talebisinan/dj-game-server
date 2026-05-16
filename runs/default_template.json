@@ -1,0 +1,254 @@
+{
+  "name": "Default World",
+  "version": "1.0.0",
+  "global_config": {
+    "respawn_enabled": true,
+    "stat_points_on_creation": 10
+  },
+  "skills": [
+    {
+      "id": "fireball",
+      "name": "Fireball",
+      "type": "damage",
+      "element": "fire",
+      "base_damage": 20,
+      "ap_cost": 4,
+      "range": 5,
+      "effects": []
+    },
+    {
+      "id": "ice_lance",
+      "name": "Ice Lance",
+      "type": "damage",
+      "element": "water",
+      "base_damage": 15,
+      "ap_cost": 3,
+      "range": 6,
+      "effects": []
+    },
+    {
+      "id": "earth_shield",
+      "name": "Earth Shield",
+      "type": "buff",
+      "element": "earth",
+      "base_damage": 0,
+      "ap_cost": 3,
+      "range": 1,
+      "effects": [
+        {
+          "stat": "hp",
+          "modifier": 20,
+          "duration_turns": 3
+        }
+      ]
+    },
+    {
+      "id": "wind_strike",
+      "name": "Wind Strike",
+      "type": "damage",
+      "element": "air",
+      "base_damage": 12,
+      "ap_cost": 2,
+      "range": 4,
+      "effects": [
+        {
+          "stat": "mp",
+          "modifier": -1,
+          "duration_turns": 2
+        }
+      ]
+    },
+    {
+      "id": "healing_light",
+      "name": "Healing Light",
+      "type": "heal",
+      "element": "fire",
+      "base_damage": 0,
+      "ap_cost": 3,
+      "range": 3,
+      "effects": [
+        {
+          "stat": "hp",
+          "modifier": 30,
+          "duration_turns": 0
+        }
+      ]
+    },
+    {
+      "id": "resurrection",
+      "name": "Resurrection",
+      "type": "resurrection",
+      "element": "fire",
+      "base_damage": 0,
+      "ap_cost": 6,
+      "range": 3,
+      "effects": [
+        {
+          "stat": "hp",
+          "modifier": 50,
+          "duration_turns": 0
+        }
+      ]
+    }
+  ],
+  "characters": [
+    {
+      "id": "mage",
+      "name": "Mage",
+      "stat_points": 10,
+      "initiative_bonus": 3,
+      "skills": [
+        { "skill_id": "fireball", "unlock_level": 1 },
+        { "skill_id": "ice_lance", "unlock_level": 1 },
+        { "skill_id": "healing_light", "unlock_level": 3 },
+        { "skill_id": "resurrection", "unlock_level": 5 }
+      ]
+    },
+    {
+      "id": "warrior",
+      "name": "Warrior",
+      "stat_points": 10,
+      "initiative_bonus": 0,
+      "skills": [
+        { "skill_id": "earth_shield", "unlock_level": 1 },
+        { "skill_id": "wind_strike", "unlock_level": 1 }
+      ]
+    }
+  ],
+  "zones": [
+    {
+      "id": "starting_zone",
+      "name": "Incarnam",
+      "width": 20,
+      "height": 14,
+      "monster_limit": 10,
+      "spawn_interval_seconds": 30,
+      "max_simultaneous_spawns": 2,
+      "monster_pool": [
+        { "monster_id": "goblin", "weight": 3 },
+        { "monster_id": "wolf", "weight": 1 }
+      ],
+      "tiles": [
+        {
+          "x": 0,
+          "y": 0,
+          "walkable": true,
+          "resource": null,
+          "npc_id": null,
+          "zone_transition": null
+        },
+        {
+          "x": 1,
+          "y": 0,
+          "walkable": true,
+          "resource": "flax",
+          "npc_id": null,
+          "zone_transition": null
+        },
+        {
+          "x": 2,
+          "y": 0,
+          "walkable": false,
+          "resource": null,
+          "npc_id": null,
+          "zone_transition": null
+        },
+        {
+          "x": 0,
+          "y": 1,
+          "walkable": true,
+          "resource": null,
+          "npc_id": "merchant",
+          "zone_transition": null
+        },
+        {
+          "x": 1,
+          "y": 1,
+          "walkable": true,
+          "resource": null,
+          "npc_id": null,
+          "zone_transition": null
+        },
+        {
+          "x": 2,
+          "y": 1,
+          "walkable": true,
+          "resource": null,
+          "npc_id": null,
+          "zone_transition": "forest_zone"
+        }
+      ],
+      "tactical_tiles": [
+        {
+          "x": 0,
+          "y": 0,
+          "elevation": 0,
+          "line_of_sight": true,
+          "spawn_order": 0
+        },
+        {
+          "x": 1,
+          "y": 0,
+          "elevation": 0,
+          "line_of_sight": true,
+          "spawn_order": 1
+        },
+        {
+          "x": 2,
+          "y": 0,
+          "elevation": 1,
+          "line_of_sight": true,
+          "spawn_order": null
+        },
+        {
+          "x": 0,
+          "y": 1,
+          "elevation": 0,
+          "line_of_sight": true,
+          "spawn_order": 2
+        },
+        {
+          "x": 1,
+          "y": 1,
+          "elevation": -1,
+          "line_of_sight": false,
+          "spawn_order": null
+        },
+        {
+          "x": 2,
+          "y": 1,
+          "elevation": 0,
+          "line_of_sight": true,
+          "spawn_order": 3
+        }
+      ]
+    }
+  ],
+  "monsters": [
+    {
+      "id": "goblin",
+      "name": "Goblin",
+      "hp": 50,
+      "ap": 4,
+      "mp": 3,
+      "behavior": "aggressive",
+      "skill_ids": ["wind_strike"]
+    },
+    {
+      "id": "wolf",
+      "name": "Wolf",
+      "hp": 80,
+      "ap": 5,
+      "mp": 4,
+      "behavior": "aggressive",
+      "skill_ids": ["wind_strike", "earth_shield"]
+    }
+  ],
+  "npcs": [
+    {
+      "id": "merchant",
+      "name": "Old Merchant",
+      "zone_id": "starting_zone"
+    }
+  ]
+}

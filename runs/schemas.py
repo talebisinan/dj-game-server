@@ -40,12 +40,17 @@ class CharacterStatsSchema(Schema):
     agility: int = Field(ge=0)
 
 
+class CharacterSkillSchema(Schema):
+    skill_id: str
+    unlock_level: int = Field(ge=1, default=1)
+
+
 class CharacterClassSchema(Schema):
     id: str
     name: str
     stat_points: int = Field(ge=0)
     initiative_bonus: int = Field(default=0)
-    skill_ids: list[str]  # references SkillSchema ids
+    skills: list[CharacterSkillSchema]
 
 
 class ExplorationTileSchema(Schema):

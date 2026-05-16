@@ -1,3 +1,6 @@
+import json
+from pathlib import Path
+
 import pytest
 from django.conf import settings
 from ninja.testing import TestClient
@@ -88,16 +91,9 @@ def other_auth_client(db, other_user):
 
 @pytest.fixture
 def minimal_config():
-    return {
-        "name": "Test World",
-        "version": "1.0.0",
-        "global_config": {"respawn_enabled": False, "stat_points_on_creation": 10},
-        "skills": [],
-        "characters": [],
-        "zones": [],
-        "monsters": [],
-        "npcs": [],
-    }
+    path = Path(__file__).parent.parent / "runs" / "default_template.json"
+    with open(path) as f:
+        return json.load(f)
 
 
 @pytest.fixture

@@ -19,9 +19,10 @@ from django.contrib import admin
 from django.urls import path
 from ninja.main import NinjaAPI
 
+from runs.api import router as runs_router
 from users.api import router as users_router
 
 api = NinjaAPI(title="Game Server API", version="1.0.0")
 api.add_router("/users/", users_router)
-
+api.add_router("/runs/", runs_router)
 urlpatterns = [path("admin/", admin.site.urls), path("api/", api.urls)]

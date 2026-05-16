@@ -13,6 +13,7 @@ dependencies = [
     "psycopg[binary]>=3.3.4",
     "pyjwt>=2.12.1",
     "python-dotenv>=1.2.2",
+    "shortuuid>=1.0.13",
 ]
 
 [dependency-groups]

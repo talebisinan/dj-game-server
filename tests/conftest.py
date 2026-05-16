@@ -2,6 +2,8 @@ import pytest
 from django.conf import settings
 from ninja.testing import TestClient
 
+from runs.api import router as runs_router
+from runs.models import Run
 from users.api import router
 from users.models import User
 from users.security import create_token
@@ -49,3 +51,59 @@ def refresh_token(test_user):
 @pytest.fixture
 def auth_header(auth_token):
     return {"Authorization": f"Bearer {auth_token}"}
+
+
+@pytest.fixture
+def runs_auth_client(auth_token):
+    client = TestClient(runs_router)
+    client.headers = {"Authorization": f"Bearer {auth_token}"}
+    return client
+
+
+@pytest.fixture
+def runs_public_client():
+    return TestClient(runs_router)
+
+
+@pytest.fixture
+def other_user(db):
+    return User.objects.create_user(
+        email="other@example.com",
+        password="testpassword123",
+        nickname="otheruser",
+    )
+
+
+@pytest.fixture
+def other_auth_client(db, other_user):
+    token = create_token(
+        subject=other_user.email,
+        token_type="access",
+        expires_minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES,
+    )
+    client = TestClient(runs_router)
+    client.headers = {"Authorization": f"Bearer {token}"}
+    return client
+
+
+@pytest.fixture
+def minimal_config():
+    return {
+        "name": "Test World",
+        "version": "1.0.0",
+        "global_config": {"respawn_enabled": False, "stat_points_on_creation": 10},
+        "skills": [],
+        "characters": [],
+        "zones": [],
+        "monsters": [],
+        "npcs": [],
+    }
+
+
+@pytest.fixture
+def test_run(db, test_user, minimal_config):
+    return Run.objects.create(
+        owner=test_user,
+        template_config=minimal_config,
+        current_config=minimal_config,
+    )

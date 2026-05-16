@@ -1,14 +1,22 @@
 from typing import cast
 
+from django.conf import settings
 from django.contrib.auth import authenticate
+from jwt.exceptions import PyJWTError
 from ninja import Router
 from ninja.errors import HttpError
 
-from users.security import create_access_token
+from users.security import create_token, decode_token
 
 from .auth import BearerAuth
 from .models import User
-from .schemas import LoginSchema, RegisterSchema, TokenSchema, UserSchema
+from .schemas import (
+    LoginSchema,
+    RefreshTokenSchema,
+    RegisterSchema,
+    TokenSchema,
+    UserSchema,
+)
 
 router = Router(tags=["users"])
 
@@ -36,8 +44,40 @@ def login(request, payload: LoginSchema):
         raise HttpError(401, "Invalid email or password")
 
     typed_user = cast(User, user)
-    token = create_access_token(subject=typed_user.email)
-    return {"access_token": token, "token_type": "bearer"}
+    access_token = create_token(
+        subject=typed_user.email,
+        token_type="access",
+        expires_minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES,
+    )
+    refresh_token = create_token(
+        subject=typed_user.email,
+        token_type="refresh",
+        expires_minutes=settings.REFRESH_TOKEN_EXPIRE_MINUTES,
+    )
+    return {
+        "access_token": access_token,
+        "refresh_token": refresh_token,
+        "token_type": "bearer",
+    }
+
+
+@router.post("/refresh", response=TokenSchema)
+def refresh(request, payload: RefreshTokenSchema):
+    try:
+        email = decode_token(token=payload.refresh_token, token_type="refresh")
+    except PyJWTError:
+        raise HttpError(401, "Invalid refresh token")
+
+    access_token = create_token(
+        subject=email,
+        token_type="access",
+        expires_minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES,
+    )
+    return {
+        "access_token": access_token,
+        "refresh_token": payload.refresh_token,
+        "token_type": "bearer",
+    }
 
 
 @router.get("/me", response=UserSchema, auth=BearerAuth())

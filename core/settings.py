@@ -118,6 +118,9 @@ AUTH_USER_MODEL = "users.User"
 JWT_SECRET = os.environ["JWT_SECRET"]
 JWT_ALGORITHM = os.environ.get("JWT_ALGORITHM", "HS256")
 ACCESS_TOKEN_EXPIRE_MINUTES = int(os.environ.get("ACCESS_TOKEN_EXPIRE_MINUTES", 60))
+REFRESH_TOKEN_EXPIRE_MINUTES = int(
+    os.environ.get("REFRESH_TOKEN_EXPIRE_MINUTES", 10080)
+)
 
 # Internationalization
 # https://docs.djangoproject.com/en/6.0/topics/i18n/

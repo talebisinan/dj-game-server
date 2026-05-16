@@ -3,13 +3,13 @@ from ninja.errors import HttpError
 from ninja.security import HttpBearer
 
 from .models import User
-from .security import decode_access_token
+from .security import decode_token
 
 
 class BearerAuth(HttpBearer):
     def authenticate(self, request, token: str):
         try:
-            email = decode_access_token(token)
+            email = decode_token(token, "access")
         except PyJWTError:
             raise HttpError(401, "Invalid or expired token")
 

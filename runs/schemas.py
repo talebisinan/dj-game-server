@@ -121,6 +121,25 @@ class GlobalConfigSchema(Schema):
     stat_points_on_creation: int = Field(ge=0, default=10)
 
 
+class PlayerStatsSchema(Schema):
+    vitality: int = Field(ge=0, default=0)
+    strength: int = Field(ge=0, default=0)
+    intelligence: int = Field(ge=0, default=0)
+    chance: int = Field(ge=0, default=0)
+    agility: int = Field(ge=0, default=0)
+
+
+class PlayerCharacterSchema(Schema):
+    character_id: str
+    user_id: str | None = None  # None = unclaimed
+    nickname: str | None = None
+    level: int = Field(ge=1, default=1)
+    xp: int = Field(ge=0, default=0)
+    unspent_stat_points: int = Field(ge=0, default=0)
+    stats: PlayerStatsSchema = PlayerStatsSchema()
+    active_effects: list = []
+
+
 class WorldConfigSchema(Schema):
     name: str
     version: str = "1.0.0"
@@ -130,6 +149,7 @@ class WorldConfigSchema(Schema):
     zones: list[ZoneSchema]
     monsters: list[MonsterSchema]
     npcs: list[NPCSchema]
+    player_characters: list[PlayerCharacterSchema] = []
 
 
 class CreateRunSchema(Schema):
@@ -143,6 +163,7 @@ class RunSchema(Schema):
     template_config: WorldConfigSchema
     current_config: WorldConfigSchema
     pending_players: list
+    pending_claims: list
     participants: list
     created_at: datetime
     updated_at: datetime

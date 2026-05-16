@@ -111,3 +111,89 @@ def test_reject_player_non_owner(other_auth_client, test_run, test_user):
 def test_reject_player_not_pending(runs_auth_client, test_run, other_user):
     response = runs_auth_client.post(f"/{test_run.invite_code}/reject/{other_user.id}")
     assert response.status_code == 403
+
+
+def test_claim_character_success(
+    other_auth_client, runs_auth_client, test_run, other_user, minimal_config
+):
+    # join and get accepted first
+    other_auth_client.post(f"/{test_run.invite_code}/join")
+    runs_auth_client.post(f"/{test_run.invite_code}/accept/{other_user.id}")
+
+    response = other_auth_client.post(f"/{test_run.invite_code}/claim/mage")
+    assert response.status_code == 200
+    assert any(c["character_id"] == "mage" for c in response.data["pending_claims"])
+
+
+def test_claim_character_not_participant(other_auth_client, test_run):
+    response = other_auth_client.post(f"/{test_run.invite_code}/claim/mage")
+    assert response.status_code == 400
+
+
+def test_claim_character_does_not_exist(
+    other_auth_client, runs_auth_client, test_run, other_user
+):
+    other_auth_client.post(f"/{test_run.invite_code}/join")
+    runs_auth_client.post(f"/{test_run.invite_code}/accept/{other_user.id}")
+
+    response = other_auth_client.post(f"/{test_run.invite_code}/claim/nonexistent")
+    assert response.status_code == 400
+
+
+def test_claim_character_already_pending(
+    other_auth_client, runs_auth_client, test_run, other_user
+):
+    other_auth_client.post(f"/{test_run.invite_code}/join")
+    runs_auth_client.post(f"/{test_run.invite_code}/accept/{other_user.id}")
+    other_auth_client.post(f"/{test_run.invite_code}/claim/mage")
+
+    response = other_auth_client.post(f"/{test_run.invite_code}/claim/mage")
+    assert response.status_code == 400
+
+
+def test_approve_claim_success(
+    runs_auth_client, other_auth_client, test_run, other_user
+):
+    other_auth_client.post(f"/{test_run.invite_code}/join")
+    runs_auth_client.post(f"/{test_run.invite_code}/accept/{other_user.id}")
+    other_auth_client.post(f"/{test_run.invite_code}/claim/mage")
+
+    response = runs_auth_client.post(f"/{test_run.invite_code}/claim/mage/approve")
+    assert response.status_code == 200
+    assert any(
+        p["character_id"] == "mage" and p["user_id"] == str(other_user.id)
+        for p in response.data["current_config"]["player_characters"]
+    )
+    assert not any(c["character_id"] == "mage" for c in response.data["pending_claims"])
+
+
+def test_approve_claim_non_owner(other_auth_client, test_run):
+    response = other_auth_client.post(f"/{test_run.invite_code}/claim/mage/approve")
+    assert response.status_code == 403
+
+
+def test_approve_claim_not_pending(runs_auth_client, test_run):
+    response = runs_auth_client.post(f"/{test_run.invite_code}/claim/mage/approve")
+    assert response.status_code == 403
+
+
+def test_reject_claim_success(
+    runs_auth_client, other_auth_client, test_run, other_user
+):
+    other_auth_client.post(f"/{test_run.invite_code}/join")
+    runs_auth_client.post(f"/{test_run.invite_code}/accept/{other_user.id}")
+    other_auth_client.post(f"/{test_run.invite_code}/claim/mage")
+
+    response = runs_auth_client.post(f"/{test_run.invite_code}/claim/mage/reject")
+    assert response.status_code == 200
+    assert not any(c["character_id"] == "mage" for c in response.data["pending_claims"])
+
+
+def test_reject_claim_non_owner(other_auth_client, test_run):
+    response = other_auth_client.post(f"/{test_run.invite_code}/claim/mage/reject")
+    assert response.status_code == 403
+
+
+def test_reject_claim_not_pending(runs_auth_client, test_run):
+    response = runs_auth_client.post(f"/{test_run.invite_code}/claim/mage/reject")
+    assert response.status_code == 403

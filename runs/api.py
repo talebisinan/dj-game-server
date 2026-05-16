@@ -63,3 +63,33 @@ def reject_player(request, invite_code: str, player_id: str):
         return RunService().reject_player(request.auth, invite_code, player_id)
     except ValueError as e:
         raise HttpError(403, str(e))
+
+
+@router.post(
+    "/{invite_code}/claim/{character_id}", response=RunSchema, auth=BearerAuth()
+)
+def claim_character(request, invite_code: str, character_id: str):
+    try:
+        return RunService().claim(request.auth, invite_code, character_id)
+    except ValueError as e:
+        raise HttpError(400, str(e))
+
+
+@router.post(
+    "/{invite_code}/claim/{character_id}/approve", response=RunSchema, auth=BearerAuth()
+)
+def approve_claim(request, invite_code: str, character_id: str):
+    try:
+        return RunService().approve_claim(request.auth, invite_code, character_id)
+    except ValueError as e:
+        raise HttpError(403, str(e))
+
+
+@router.post(
+    "/{invite_code}/claim/{character_id}/reject", response=RunSchema, auth=BearerAuth()
+)
+def reject_claim(request, invite_code: str, character_id: str):
+    try:
+        return RunService().reject_claim(request.auth, invite_code, character_id)
+    except ValueError as e:
+        raise HttpError(403, str(e))

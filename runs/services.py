@@ -72,3 +72,94 @@ class RunService:
         ]
         run.save()
         return run
+
+    def claim(self, user: User, invite_code: str, character_id: str) -> Run:
+        run = self.get(invite_code)
+        user_id = str(user.id)
+
+        # verify player is a participant
+        if not any(p["user_id"] == user_id for p in run.participants):
+            raise ValueError("You are not a participant in this run")
+
+        # verify character exists in current_config
+        config = WorldConfigSchema(**run.current_config)
+        if not any(c.id == character_id for c in config.characters):
+            raise ValueError("Character does not exist")
+
+        # verify no pending claim for this character already
+        if any(c["character_id"] == character_id for c in run.pending_claims):
+            raise ValueError("Character already has a pending claim")
+
+        # add to pending claims
+        run.pending_claims.append(
+            {
+                "user_id": user_id,
+                "nickname": user.nickname,
+                "character_id": character_id,
+            }
+        )
+        run.save()
+        return run
+
+    def approve_claim(self, owner: User, invite_code: str, character_id: str) -> Run:
+        run = self.get(invite_code)
+
+        # verify requester is owner
+        if run.owner != owner:
+            raise ValueError("Only the owner can approve claims")
+
+        # find the pending claim
+        claim = next(
+            (c for c in run.pending_claims if c["character_id"] == character_id), None
+        )
+        if not claim:
+            raise ValueError("No pending claim for this character")
+
+        # remove from pending claims
+        run.pending_claims = [
+            c for c in run.pending_claims if c["character_id"] != character_id
+        ]
+
+        # add or update player_characters in current_config
+        config = run.current_config
+        config["player_characters"] = [
+            p
+            for p in config.get("player_characters", [])
+            if p["character_id"] != character_id
+        ]
+        config["player_characters"].append(
+            {
+                "character_id": character_id,
+                "user_id": claim["user_id"],
+                "nickname": claim["nickname"],
+                "level": 1,
+                "xp": 0,
+                "unspent_stat_points": 0,
+                "stats": {
+                    "vitality": 0,
+                    "strength": 0,
+                    "intelligence": 0,
+                    "chance": 0,
+                    "agility": 0,
+                },
+                "active_effects": [],
+            }
+        )
+        run.current_config = config
+        run.save()
+        return run
+
+    def reject_claim(self, owner: User, invite_code: str, character_id: str) -> Run:
+        run = self.get(invite_code)
+
+        if run.owner != owner:
+            raise ValueError("Only the owner can reject claims")
+
+        if not any(c["character_id"] == character_id for c in run.pending_claims):
+            raise ValueError("No pending claim for this character")
+
+        run.pending_claims = [
+            c for c in run.pending_claims if c["character_id"] != character_id
+        ]
+        run.save()
+        return run

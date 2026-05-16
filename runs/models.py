@@ -15,6 +15,7 @@ class Run(models.Model):
     template_config = models.JSONField()
     current_config = models.JSONField()
     pending_players = models.JSONField(default=list)
+    pending_claims = models.JSONField(default=list)
     participants = models.JSONField(default=list)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

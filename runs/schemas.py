@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Literal
 
 from ninja import Schema
@@ -136,6 +137,10 @@ class RunSchema(Schema):
     is_started: bool
     template_config: WorldConfigSchema
     current_config: WorldConfigSchema
+    pending_players: list
+    participants: list
+    created_at: datetime
+    updated_at: datetime
 
 
 class RunStartedSchema(Schema):

@@ -47,3 +47,67 @@ def test_export_run_success(runs_auth_client, test_run, minimal_config):
     response = runs_auth_client.get(f"/{test_run.invite_code}/export/")
     assert response.status_code == 200
     assert response.data["name"] == minimal_config["name"]
+
+
+def test_join_run_success(other_auth_client, test_run):
+    response = other_auth_client.post(f"/{test_run.invite_code}/join")
+    assert response.status_code == 200
+    assert any(p["nickname"] == "otheruser" for p in response.data["pending_players"])
+
+
+def test_join_run_already_pending(other_auth_client, test_run):
+    other_auth_client.post(f"/{test_run.invite_code}/join")
+    response = other_auth_client.post(f"/{test_run.invite_code}/join")
+    assert response.status_code == 400
+
+
+def test_join_run_already_participant(
+    other_auth_client, runs_auth_client, test_run, other_user
+):
+    other_auth_client.post(f"/{test_run.invite_code}/join")
+    runs_auth_client.post(f"/{test_run.invite_code}/accept/{other_user.id}")
+    response = other_auth_client.post(f"/{test_run.invite_code}/join")
+    assert response.status_code == 400
+
+
+def test_accept_player_success(
+    runs_auth_client, other_auth_client, test_run, other_user
+):
+    other_auth_client.post(f"/{test_run.invite_code}/join")
+    response = runs_auth_client.post(f"/{test_run.invite_code}/accept/{other_user.id}")
+    assert response.status_code == 200
+    assert any(p["nickname"] == "otheruser" for p in response.data["participants"])
+    assert not any(
+        p["nickname"] == "otheruser" for p in response.data["pending_players"]
+    )
+
+
+def test_accept_player_non_owner(other_auth_client, test_run, test_user):
+    response = other_auth_client.post(f"/{test_run.invite_code}/accept/{test_user.id}")
+    assert response.status_code == 403
+
+
+def test_accept_player_not_pending(runs_auth_client, test_run, other_user):
+    response = runs_auth_client.post(f"/{test_run.invite_code}/accept/{other_user.id}")
+    assert response.status_code == 403
+
+
+def test_reject_player_success(
+    runs_auth_client, other_auth_client, test_run, other_user
+):
+    other_auth_client.post(f"/{test_run.invite_code}/join")
+    response = runs_auth_client.post(f"/{test_run.invite_code}/reject/{other_user.id}")
+    assert response.status_code == 200
+    assert not any(
+        p["nickname"] == "otheruser" for p in response.data["pending_players"]
+    )
+
+
+def test_reject_player_non_owner(other_auth_client, test_run, test_user):
+    response = other_auth_client.post(f"/{test_run.invite_code}/reject/{test_user.id}")
+    assert response.status_code == 403
+
+
+def test_reject_player_not_pending(runs_auth_client, test_run, other_user):
+    response = runs_auth_client.post(f"/{test_run.invite_code}/reject/{other_user.id}")
+    assert response.status_code == 403
